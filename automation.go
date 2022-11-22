@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -39,7 +40,8 @@ func (page git_page) get_git_files() []string {
 
 func main() {
 	challenge_number := get_challenge_number()
-	println(challenge_number)
+	fmt.Printf("Challenge Number: %v\n", challenge_number)
+	new_directory(fmt.Sprintf("Challenge_%v", challenge_number))
 }
 
 // This function finds the latest challenge number by scraping the tester's github page
@@ -94,5 +96,12 @@ func move_directory(old_path string, new_path string) {
 	if err != nil {
 		println("Error moving {}", old_path)
 		panic(err)
+	}
+}
+
+func new_directory(path string) {
+	err := os.Mkdir(path, 0750)
+	if err == nil {
+		fmt.Printf("New Directory %v created\n", path)
 	}
 }
