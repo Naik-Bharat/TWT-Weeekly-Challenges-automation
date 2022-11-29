@@ -40,8 +40,7 @@ func (page git_page) get_git_files() []string {
 
 func main() {
 	challenge_number := get_challenge_number()
-	fmt.Printf("Challenge Number: %v\n", challenge_number)
-	new_directory(fmt.Sprintf("Challenge_%v", challenge_number))
+	folder_restructure(challenge_number)
 }
 
 // This function finds the latest challenge number by scraping the tester's github page
@@ -63,6 +62,7 @@ func get_challenge_number() int {
 		}
 	}
 
+	fmt.Printf("Challenge Number: %v\n", challenge_number)
 	return challenge_number
 }
 
@@ -90,6 +90,40 @@ func wget(link string, file_path string) {
 	}
 }
 
+// this function returns whether a folder should be moved to previous challenges folder
+func old_challenge(file string, challenge_number int) bool {
+	file_challenge_number, err := strconv.Atoi(file[len("Challenge_"):])
+	if err != nil {
+		println("Cannot convert challenge number to int in challenge tester's git repo")
+		panic(err)
+	}
+
+	challenge_diff := challenge_number - file_challenge_number
+	if challenge_diff <= 2 {
+		return false
+	}
+	return true
+}
+
+// function to handle folder re-structuring
+func folder_restructure(challenge_number int) {
+	new_directory(fmt.Sprintf("Challenge_%v", challenge_number))
+	new_directory("Previous_Challenges")
+	files, err := ioutil.ReadDir("./")
+	if err != nil {
+		println("Cannot read current directory")
+		panic(err)
+	}
+	for _, file := range files {
+		if strings.Contains(file.Name(), "Challenge_") {
+			if old_challenge(file.Name(), challenge_number) {
+				move_directory(file.Name(), fmt.Sprintf("Previous_Challenges/%v", file.Name()))
+				fmt.Printf("Moved %v to %v\n", file.Name(), fmt.Sprintf("Previous_Challenges/%v", file.Name()))
+			}
+		}
+	}
+}
+
 // function to handle moving directories
 func move_directory(old_path string, new_path string) {
 	err := os.Rename(old_path, new_path)
@@ -99,6 +133,7 @@ func move_directory(old_path string, new_path string) {
 	}
 }
 
+// function to create new directories
 func new_directory(path string) {
 	err := os.Mkdir(path, 0750)
 	if err == nil {
