@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -41,6 +41,17 @@ func (page git_page) get_git_files() []string {
 func main() {
 	challenge_number := get_challenge_number()
 	folder_restructure(challenge_number)
+	download_files(challenge_number)
+}
+
+func download_files(challenge_number int) {
+	page := git_page{fmt.Sprintf("https://github.com/Pomroka/TWT_Challenges_Tester/tree/main/Challenge_%v", challenge_number)}
+	files := page.get_git_files()
+	for _, file := range files {
+		if file != "G" {
+			wget(fmt.Sprintf("https://raw.githubusercontent.com/Pomroka/TWT_Challenges_Tester/main/Challenge_%v/%v", challenge_number, file), fmt.Sprintf("Challenge_%v/%v", challenge_number, file))
+		}
+	}
 }
 
 // This function finds the latest challenge number by scraping the tester's github page
@@ -66,6 +77,7 @@ func get_challenge_number() int {
 	return challenge_number
 }
 
+// function to read a url and return a slice of its content
 func get_url(link string) []string {
 	resp, err := http.Get(link)
 	if err != nil {
@@ -73,7 +85,7 @@ func get_url(link string) []string {
 		panic(err)
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		println("Error reading content from", link)
 		panic(err)
@@ -88,6 +100,7 @@ func wget(link string, file_path string) {
 	if err != nil {
 		panic(err)
 	}
+	println(fmt.Sprintf("Downloaded %v", link))
 }
 
 // this function returns whether a folder should be moved to previous challenges folder
@@ -99,17 +112,13 @@ func old_challenge(file string, challenge_number int) bool {
 	}
 
 	challenge_diff := challenge_number - file_challenge_number
-	if challenge_diff <= 2 {
-		return false
-	}
-	return true
+	return challenge_diff > 2
 }
 
 // function to handle folder re-structuring
 func folder_restructure(challenge_number int) {
 	new_directory(fmt.Sprintf("Challenge_%v", challenge_number))
-	new_directory("Previous_Challenges")
-	files, err := ioutil.ReadDir("./")
+	files, err := os.ReadDir("./")
 	if err != nil {
 		println("Cannot read current directory")
 		panic(err)
