@@ -95,8 +95,17 @@ func get_url(link string) []string {
 
 // function to wget files
 func wget(link string, file_path string) {
+	_, err := os.OpenFile(file_path, os.O_RDONLY, 0750)
+	if err == nil {
+		var choice string
+		fmt.Printf("%v already exists. Do you want to rewrite? (y/N) ", link)
+		fmt.Scanln(&choice)
+		if choice != "y" && choice != "Y" {
+			return
+		}
+	}
 	cmd := exec.Command("wget", link, "-O", file_path)
-	_, err := cmd.Output()
+	_, err = cmd.Output()
 	if err != nil {
 		panic(err)
 	}
