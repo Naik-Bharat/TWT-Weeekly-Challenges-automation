@@ -73,7 +73,7 @@ func get_challenge_number() int {
 		}
 	}
 
-	fmt.Printf("Challenge Number: %v\n", challenge_number)
+	fmt.Println("Challenge Number:", challenge_number)
 	return challenge_number
 }
 
@@ -109,7 +109,7 @@ func wget(link string, file_path string) {
 	if err != nil {
 		panic(err)
 	}
-	println(fmt.Sprintf("Downloaded %v", link))
+	fmt.Println("Downloaded", link)
 }
 
 // this function returns whether a folder should be moved to previous challenges folder
@@ -135,6 +135,7 @@ func folder_restructure(challenge_number int) {
 	for _, file := range files {
 		if strings.Contains(file.Name(), "Challenge_") {
 			if old_challenge(file.Name(), challenge_number) {
+				new_directory("Previous_Challenges")
 				move_directory(file.Name(), fmt.Sprintf("Previous_Challenges/%v", file.Name()))
 				fmt.Printf("Moved %v to %v\n", file.Name(), fmt.Sprintf("Previous_Challenges/%v", file.Name()))
 			}
@@ -146,7 +147,7 @@ func folder_restructure(challenge_number int) {
 func move_directory(old_path string, new_path string) {
 	err := os.Rename(old_path, new_path)
 	if err != nil {
-		println("Error moving {}", old_path)
+		println("Error moving ", old_path)
 		panic(err)
 	}
 }
